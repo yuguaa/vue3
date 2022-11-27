@@ -1,8 +1,7 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
-import 'normalize.css/normalize.css' // a modern alternative to CSS resets
-
+import './styles/tailwindcss.css'
 import App from './App.vue'
 import router from './router'
 
