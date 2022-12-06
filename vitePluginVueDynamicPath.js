@@ -1,8 +1,6 @@
 /**
  * vite 3.2.4  依赖vite实验性设置 https://cn.vitejs.dev/guide/build.html#advanced-base-options
  */
-const VITE_PLUGIN_NAME = 'vite-plugin-vue-dynamic-path'
-// 修改异步加载的资源的路径的方法
 
 const resetPublicPathBySource = (
   dynamicUrl,
@@ -39,11 +37,12 @@ function loadJson() {
 }
 loadJson();`
 
-const insertLoadJsonCode = `<script async>${resetPublicPathBySource(
-  '',
-  '/sourceConfig.json',
-  ''
-)}</script>`
+const insertLoadJsonCode = (viteOptions) =>
+  `<script async>${resetPublicPathBySource(
+    '',
+    viteOptions.loadSourceConfig.filePath,
+    ''
+  )}</script>`
 const insertHeadCode = `<script>
   /**
    * @description: 
@@ -126,6 +125,9 @@ function resolveLinkPath(html, viteOptions) {
   return html
 }
 
+const VITE_PLUGIN_NAME = 'vite-plugin-vue-dynamic-path'
+// 修改异步加载的资源的路径的方法
+
 export default function vitePluginVueDynamicPath(options) {
   const viteOptions = options || {
     loadSourceConfig: {
@@ -160,7 +162,7 @@ export default function vitePluginVueDynamicPath(options) {
     },
     transformIndexHtml(html) {
       html = html.replace(/<head>/, '<head>' + insertHeadCode)
-      html = html.replace(/<head>/, '<head>' + insertLoadJsonCode)
+      html = html.replace(/<head>/, '<head>' + insertLoadJsonCode(viteOptions))
       html = resolveScriptPath(html, viteOptions)
       html = resolveLinkPath(html, viteOptions)
       return html
