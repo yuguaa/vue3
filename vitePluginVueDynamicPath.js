@@ -61,17 +61,19 @@ const insertHeadCode = `<script>
     }
     function insert() {
       let node
+      let doc
       // 如果taglink以<script开头，则插入js文件
       if (taglink.startsWith('<script')) {
         //替换taglink中的src属性
-        node =
-          taglink.replace(/src=".*?"/, 'src="' + createUrl() + '" />')
+        node = taglink.replace(/src=".*?"/, 'src="' + createUrl() + '" /')
+        doc = new DOMParser().parseFromString(node, 'text/html')
+        document.head.appendChild(doc.documentElement.querySelector('script'))
       } else if (taglink.startsWith('<link')) {
         //替换taglink中的href属性
         node = taglink.replace(/href=".*?"/, 'href="' + createUrl() + '"')
+        doc = new DOMParser().parseFromString(node, 'text/html')
+        document.head.appendChild(doc.documentElement.querySelector('link'))
       }
-      let doc = new DOMParser().parseFromString(node, 'text/html')
-      document.head.appendChild(doc.documentElement)
     }
   
     function startTask() {
