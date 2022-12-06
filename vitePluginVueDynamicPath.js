@@ -15,7 +15,7 @@ function loadJson() {
       url =  window.location.origin + "${path}";
     }
     var resultUrl = '';
-      // url = 'http://test.21tb.com/sourceConfig.json'
+    // url = 'http://test.21tb.com/sourceConfig.json'
     var request = new XMLHttpRequest()
     request.open('get', url)
     request.send(null)
@@ -24,15 +24,15 @@ function loadJson() {
         var json = JSON.parse(request.responseText)
          // var url = json.sourceUrl + '/vue3-project/';
         var resultUrl = json.sourceUrl + "${sourcePath}";
-        window.__toCdnUrl = resultUrl;
+        window.__cdnPath = resultUrl;
       }else{
         var resultUrl = window.location.origin + '${sourcePath || '/'}';
-        window.__toCdnUrl = resultUrl;
+        window.__cdnPath = resultUrl;
       }
     }
     request.onerror = function() {
       var resultUrl = window.location.origin + '${sourcePath || '/'}';
-      window.__toCdnUrl = resultUrl;
+      window.__cdnPath = resultUrl;
     }
 }
 loadJson();`
@@ -43,6 +43,12 @@ const insertLoadJsonCode = (viteOptions) =>
     viteOptions.loadSourceConfig.filePath,
     ''
   )}</script>`
+const insertConverUrlCode = (viteOptions) => `
+  <script>
+    var __toCdnUrl = function (url) {
+      return window.__cdnPath + ${viteOptions.loadSourceConfig.sourcePath} + url;
+    };
+  </script>`
 const insertHeadCode = `<script>
   /**
    * @description: 
@@ -57,29 +63,49 @@ const insertHeadCode = `<script>
     var count = 0
     // css，js文件地址
     function createUrl() {
-      return window.__toCdnUrl + path
+      return window.__cdnPath + path
     }
     function insert() {
       let node
       let doc
       // 如果taglink以<script开头，则插入js文件
       if (taglink.startsWith('<script')) {
-        //替换taglink中的src属性
-        node = taglink.replace(/src=".*?"/, 'src="' + createUrl() + '" /')
-        doc = new DOMParser().parseFromString(node, 'text/html')
-        document.head.appendChild(doc.documentElement.querySelector('script'))
+        let script = document.createElement('script')
+        script.src = createUrl()
+        if(taglink.indexOf('defer')!==-1){
+          script.defer = true
+        }
+        if(taglink.indexOf('async')!==-1){
+          script.async = true
+        }
+        if(taglink.indexOf('nomodule')!==-1){
+          script.nomodule = true
+        }
+        if(taglink.indexOf('type="module"')!==-1){
+          script.type = 'module'
+        }
+        document.head.appendChild(script)
       } else if (taglink.startsWith('<link')) {
         //替换taglink中的href属性
-        node = taglink.replace(/href=".*?"/, 'href="' + createUrl() + '"')
-        doc = new DOMParser().parseFromString(node, 'text/html')
-        document.head.appendChild(doc.documentElement.querySelector('link'))
+        let link = document.createElement('link')
+        link.href = createUrl()
+        if(taglink.indexOf('rel="stylesheet"')!==-1){
+          link.rel = 'stylesheet'
+        }
+        if(taglink.indexOf('type="text/css"')!==-1){
+          link.type = 'text/css'
+        }
+        if(taglink.indexOf('rel="icon"')!==-1){
+          link.rel = 'icon'
+        }
+        document.head.appendChild(link)
       }
     }
   
     function startTask() {
       count++
       time && clearTimeout(time)
-      if (window.__toCdnUrl) {
+      if (window.__cdnPath) {
         setTimeout(() => {
           console.log((insertTimeout || 200) + 'ms后插入')
           insert()
@@ -165,6 +191,7 @@ export default function vitePluginVueDynamicPath(options) {
     transformIndexHtml(html) {
       html = html.replace(/<head>/, '<head>' + insertHeadCode)
       html = html.replace(/<head>/, '<head>' + insertLoadJsonCode(viteOptions))
+      html = html.replace(/<head>/, '<head>' + insertConverUrlCode(viteOptions))
       html = resolveScriptPath(html, viteOptions)
       html = resolveLinkPath(html, viteOptions)
       return html
