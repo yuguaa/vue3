@@ -1,7 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
-import vitePluginVueDynamicPath from './node_modules/vite-plugin-vue-dynamic-path'
-
+const vitePluginVueDynamicPath = require('vite-plugin-vue-dynamic-path')
 const path = require('path')
 const VITE_PUBLIC_PATH = '/vue3-project/'
 const root = process.cwd()
