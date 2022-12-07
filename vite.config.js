@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
-import vitePluginVueDynamicPath from './vitePluginVueDynamicPath.js'
+import vitePluginVueDynamicPath from './node_modules/vite-plugin-vue-dynamic-path'
 
 const path = require('path')
 const VITE_PUBLIC_PATH = '/vue3-project/'
@@ -15,7 +15,17 @@ export default defineConfig({
     port: 3000,
     open: true
   },
-  plugins: [vue(), vitePluginVueDynamicPath()],
+  plugins: [
+    vue(),
+    vitePluginVueDynamicPath({
+      loadSourceConfig: {
+        sourcePath: '/vue3-project/',
+        insertTimeout: 400,
+        retryCount: 5,
+        filePath: '/sourceConfig.json'
+      }
+    })
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
