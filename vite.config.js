@@ -5,7 +5,6 @@ import vitePluginVueDynamicPath from './vitePluginVueDynamicPath.js'
 const path = require('path')
 const VITE_PUBLIC_PATH = '/vue3-project/'
 const root = process.cwd()
-
 import { defineConfig } from 'vite'
 // https://vitejs.dev/config/
 export default defineConfig({

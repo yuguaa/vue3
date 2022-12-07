@@ -168,6 +168,10 @@ export default function vitePluginVueDynamicPath(options) {
   return {
     name: VITE_PLUGIN_NAME,
     enforce: 'pre',
+    apply(config, { command }) {
+      // 非 SSR 情况下的 build
+      return command === 'build'
+    },
     config(config, { command }) {
       if (command === 'build') {
         config.experimental = {
